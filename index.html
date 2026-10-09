@@ -214,10 +214,23 @@ function escapeHTML(s){
 function deleteButton(kind,id){
  return `<button class="delete" data-delete="${kind}" data-id="${id}">Eliminar</button>`;
 }
+
 function movementHTML(t){
  const income=t.type==='income';
- return `<div class="item"><div class="item-icon">${income?'↗️':'↘️'}</div><div class="item-main"><strong>${escapeHTML(t.description)}</strong><small>${escapeHTML(t.category)} · ${escapeHTML(t.date)}</small></div><div class="item-right"><div class="amount ${income?'green':'red'}">${income?'+':'−'}${money(t.amount)}</div>${deleteButton('transaction',t.id)}</div></div>`;
+ return `<div class="item">
+  <div class="item-icon">${income?'↗️':'↘️'}</div>
+  <div class="item-main">
+   <strong>${escapeHTML(t.description)}</strong>
+   <small>${escapeHTML(t.category)} · ${escapeHTML(t.date)}</small>
+  </div>
+  <div class="item-right">
+   <div class="amount ${income?'green':'red'}">${income?'+':'−'}${money(t.amount)}</div>
+   <button class="delete" data-edit-transaction="${t.id}">Editar</button>
+   ${deleteButton('transaction',t.id)}
+  </div>
+ </div>`;
 }
+  
 function renderTransactions(){
  const q=$('filter').value.trim().toLowerCase();
  const filtered=[...transactions].filter(t=>(t.description+' '+t.category).toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));
