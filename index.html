@@ -334,6 +334,107 @@ $('clearTransactions').addEventListener('click',()=>{
 });
 render();
 </script>
+
+<!-- Gráficos financieros My Finances PY -->
+<section id="finance-charts" style="margin:24px 0;padding:20px;border-radius:16px;background:#fff;color:#172033;">
+  <h2 style="margin-top:0;">📊 Análisis financiero</h2>
+  <p style="color:#64748b;">Resumen de tus ingresos y gastos registrados.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+    <div style="padding:16px;border:1px solid #e2e8f0;border-radius:12px;">
+      <h3>Ingresos vs. gastos</h3>
+      <canvas id="incomeExpenseChart" height="220"></canvas>
+    </div>
+    <div style="padding:16px;border:1px solid #e2e8f0;border-radius:12px;">
+      <h3>Distribución</h3>
+      <canvas id="expenseCategoryChart" height="220"></canvas>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function () {
+  function buildCharts() {
+    if (typeof Chart === "undefined") return;
+
+    const canvas1 = document.getElementById("incomeExpenseChart");
+    const canvas2 = document.getElementById("expenseCategoryChart");
+    if (!canvas1 || !canvas2) return;
+
+    const storageKeys = ["transactions", "movements", "financeTransactions"];
+    let transactions = [];
+
+    for (const key of storageKeys) {
+      try {
+        const value = JSON.parse(localStorage.getItem(key) || "null");
+        if (Array.isArray(value) && value.length) {
+          transactions = value;
+          break;
+        }
+      } catch (e) {}
+    }
+
+    const totals = { income: 0, expense: 0 };
+    const categories = {};
+
+    transactions.forEach(function (t) {
+      const type = String(t.type || t.kind || t.transactionType || "").toLowerCase();
+      const amount = Number(t.amount || t.value || t.monto || 0);
+      if (!Number.isFinite(amount) || amount <= 0) return;
+
+      if (["income", "ingreso", "incomes"].includes(type)) {
+        totals.income += amount;
+      } else if (["expense", "gasto", "egreso", "expenses"].includes(type)) {
+        totals.expense += amount;
+        const category = t.category || t.categoria || "Otros";
+        categories[category] = (categories[category] || 0) + amount;
+      }
+    });
+
+    if (window.myFinanceCharts) {
+      window.myFinanceCharts.forEach(function (chart) { chart.destroy(); });
+    }
+
+    window.myFinanceCharts = [
+      new Chart(canvas1, {
+        type: "bar",
+        data: {
+          labels: ["Ingresos", "Gastos"],
+          datasets: [{
+            label: "Guaraníes (₲)",
+            data: [totals.income, totals.expense],
+            backgroundColor: ["#16a34a", "#ef4444"],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      }),
+      new Chart(canvas2, {
+        type: "doughnut",
+        data: {
+          labels: Object.keys(categories).length ? Object.keys(categories) : ["Sin gastos registrados"],
+          datasets: [{
+            data: Object.keys(categories).length ? Object.values(categories) : [1],
+            backgroundColor: ["#6366f1", "#06b6d4", "#f59e0b", "#ec4899", "#8b5cf6", "#94a3b8"]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      })
+    ];
+  }
+
+  window.addEventListener("load", buildCharts);
+})();
+</script>
 </body>
 </html>
 
