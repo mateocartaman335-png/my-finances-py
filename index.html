@@ -1,1 +1,339 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123c2c">
+<meta name="description" content="Organizá tus gastos, ahorrá y aprendé a administrar tu dinero con My Finances PY.">
+<title>My Finances PY | Tu futuro financiero</title>
+<style>
+:root{--green:#123c2c;--mint:#a8edc1;--bg:#f3f7f4;--white:#fff;--text:#20352a;--muted:#718078;--red:#c74747}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+header{background:var(--green);color:white;padding:24px 18px 30px}
+.top{max-width:1050px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-size:21px;font-weight:800}.logo span{color:var(--mint)}
+.tag{font-size:12px;color:#c5dfd0;margin-top:5px}
+header h1{font-size:clamp(25px,5vw,38px);margin:30px 0 8px}
+header p{color:#c5dfd0;margin:0}
+main{max-width:1050px;margin:-1px auto 40px;padding:18px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card,.panel{background:white;border:1px solid #e3ebe5;border-radius:16px;padding:17px}
+.card small,.muted{color:var(--muted)}
+.amount{font-size:clamp(17px,3vw,25px);font-weight:800;margin-top:9px;overflow-wrap:anywhere}
+.green{color:#16804b}.red{color:var(--red)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:20px 0 14px}
+.tabs button{border:1px solid #dce6df;background:white;border-radius:10px;padding:11px 14px;white-space:nowrap;color:var(--text)}
+.tabs button.active{background:var(--green);color:white}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+h2{font-size:19px;margin:0 0 16px}
+h3{font-size:15px;margin:0 0 10px}
+label{display:block;font-size:13px;font-weight:650;margin:12px 0 6px}
+input,select{width:100%;padding:12px;border:1px solid #d9e3dc;border-radius:9px;background:white;color:var(--text)}
+.primary{width:100%;margin-top:15px;border:0;border-radius:10px;padding:13px;background:var(--green);color:white;font-weight:700}
+.secondary{border:1px solid #d9e3dc;border-radius:9px;padding:9px 12px;background:white;color:var(--text)}
+.item{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #edf1ee}
+.item:last-child{border-bottom:0}
+.item strong{display:block;font-size:14px}
+.item small{display:block;color:var(--muted);margin-top:4px}
+.item-right{text-align:right;min-width:100px}
+.empty{color:var(--muted);font-size:14px;padding:16px 0}
+.progress{height:9px;background:#e6eee8;border-radius:10px;overflow:hidden;margin:10px 0}
+.progress div{height:100%;background:#36a568;border-radius:10px;width:0}
+.section{display:none}.section.active{display:block}
+.tip{background:#eaf7ee;padding:15px;border-radius:12px;margin:10px 0}
+footer{text-align:center;padding:22px;color:var(--muted);font-size:12px}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+@media(max-width:650px){.cards{grid-template-columns:1fr}.card{padding:14px}.amount{font-size:24px}.layout{grid-template-columns:1fr}main{padding:12px}.tabs{padding-top:14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div>
+      <div class="logo">My Finances <span>PY</span></div>
+      <div class="tag">TU DINERO. TUS DECISIONES. TU FUTURO.</div>
+    </div>
+    <span>🇵🇾</span>
+  </div>
+  <div style="max-width:1050px;margin:auto">
+    <h1>Tomá el control de tu dinero.</h1>
+    <p>Organizá tus gastos, creá hábitos y avanzá hacia tus metas.</p>
+  </div>
+</header>
+
+<main>
+  <div class="cards">
+    <div class="card"><small>Ingresos del mes</small><div class="amount green" id="income">₲ 0</div></div>
+    <div class="card"><small>Gastos del mes</small><div class="amount red" id="expenses">₲ 0</div></div>
+    <div class="card"><small>Disponible del mes</small><div class="amount" id="balance">₲ 0</div></div>
+  </div>
+
+  <nav class="tabs">
+    <button class="active" data-tab="dashboard">Resumen</button>
+    <button data-tab="transactions">Movimientos</button>
+    <button data-tab="savings">Mis ahorros</button>
+    <button data-tab="learn">Aprender</button>
+  </nav>
+
+  <section class="section active" id="dashboard">
+    <div class="layout">
+      <div class="panel">
+        <h2>Nuevo movimiento</h2>
+        <form id="transactionForm">
+          <label for="type">Tipo de movimiento</label>
+          <select id="type"><option value="expense">Gasto</option><option value="income">Ingreso</option></select>
+          <label for="description">Descripción</label>
+          <input id="description" placeholder="Ej. Compra del supermercado" maxlength="80" required>
+          <label for="category">Categoría</label>
+          <select id="category">
+            <option>Alimentación</option><option>Transporte</option><option>Vivienda</option>
+            <option>Servicios</option><option>Salud</option><option>Entretenimiento</option>
+            <option>Educación</option><option>Salario</option><option>Ventas</option>
+            <option>Ahorro</option><option>Otros</option>
+          </select>
+          <label for="amount">Monto en guaraníes (₲)</label>
+          <input id="amount" type="number" min="1" step="1" placeholder="Ej. 150000" required>
+          <label for="date">Fecha</label>
+          <input id="date" type="date" required>
+          <button class="primary" type="submit">+ Guardar movimiento</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Últimos movimientos</h2>
+        <div id="recent"></div>
+        <button class="secondary" id="seeAll">Ver todos</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:15px">
+      <h2>Tu presupuesto mensual</h2>
+      <label for="budget">Límite de gastos del mes (₲)</label>
+      <input id="budget" type="number" min="0" step="1" placeholder="Ej. 2000000">
+      <button class="primary" id="saveBudget">Guardar presupuesto</button>
+      <div id="budgetResult" style="margin-top:15px"></div>
+    </div>
+  </section>
+
+  <section class="section" id="transactions">
+    <div class="panel">
+      <h2>Todos tus movimientos</h2>
+      <div id="allTransactions"></div>
+      <button class="secondary" id="clearTransactions" style="margin-top:14px">Borrar todos los movimientos</button>
+    </div>
+  </section>
+
+  <section class="section" id="savings">
+    <div class="layout">
+      <div class="panel">
+        <h2>Crear una meta de ahorro</h2>
+        <form id="goalForm">
+          <label for="goalName">¿Para qué querés ahorrar?</label>
+          <input id="goalName" maxlength="60" placeholder="Ej. Comprar un celular" required>
+          <label for="goalTarget">¿Cuánto necesitás? (₲)</label>
+          <input id="goalTarget" type="number" min="1" step="1" required placeholder="3000000">
+          <label for="goalSaved">¿Cuánto tenés ahorrado? (₲)</label>
+          <input id="goalSaved" type="number" min="0" step="1" value="0" required>
+          <button class="primary" type="submit">Crear meta</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Mis metas</h2>
+        <div id="goalsList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="learn">
+    <div class="panel">
+      <h2>Tu escuela financiera 📚</h2>
+      <p class="muted">Pequeños pasos para mejorar tu relación con el dinero.</p>
+      <div class="tip"><h3>1. Conocé tus gastos</h3>Registrá lo que gastás durante el mes. Incluso las compras pequeñas pueden sumar bastante.</div>
+      <div class="tip"><h3>2. Creá un presupuesto realista</h3>Separá primero los gastos necesarios. Planificá el resto según tus posibilidades.</div>
+      <div class="tip"><h3>3. Ahorrá según tus posibilidades</h3>No necesitás empezar con mucho. Una cantidad pequeña y constante puede ayudarte a formar el hábito.</div>
+      <div class="tip"><h3>4. Prepará un fondo de emergencia</h3>Intentá construir una reserva para imprevistos, de manera gradual y sin descuidar tus necesidades básicas.</div>
+      <div class="tip"><h3>5. Entendé tus deudas</h3>Revisá cuánto debés, las tasas de interés, las fechas de vencimiento y los pagos mínimos.</div>
+      <div class="tip"><h3>6. Cuidado con las inversiones</h3>Antes de invertir, entendé los riesgos, las comisiones y la posibilidad de perder dinero. Desconfiá de las ganancias garantizadas.</div>
+      <p class="note">Contenido educativo general. No constituye asesoramiento financiero personalizado ni garantiza resultados.</p>
+    </div>
+  </section>
+  <p class="note" style="margin-top:18px">🔒 Tus movimientos se guardan localmente en este navegador. No introduzcas contraseñas, números de tarjetas ni datos bancarios sensibles.</p>
+</main>
+<footer>My Finances PY © <span id="year"></span> · Organizá. Ahorrá. Crecé. 🇵🇾</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat('es-PY',{
+  style:'currency',currency:'PYG',maximumFractionDigits:0
+}).format(n);
+
+function load(key,fallback){
+  try {
+    const value=localStorage.getItem(key);
+    return value===null?fallback:JSON.parse(value);
+  } catch(e){return fallback}
+}
+let transactions=load('mfp_transactions',[]);
+let goals=load('mfp_goals',[]);
+let budget=load('mfp_budget',0);
+
+function save(){
+  try {
+    localStorage.setItem('mfp_transactions',JSON.stringify(transactions));
+    localStorage.setItem('mfp_goals',JSON.stringify(goals));
+    localStorage.setItem('mfp_budget',JSON.stringify(budget));
+    return true;
+  } catch(e){
+    alert('No se pudieron guardar los datos. Revisá el espacio disponible del navegador.');
+    return false;
+  }
+}
+function safe(value){
+  return String(value).replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function currentMonth(t){
+  return t.date && t.date.slice(0,7)===new Date().toISOString().slice(0,7);
+}
+function render(){
+  const month=transactions.filter(currentMonth);
+  const income=month.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const expenses=month.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  $('income').textContent=money(income);
+  $('expenses').textContent=money(expenses);
+  $('balance').textContent=money(income-expenses);
+  $('balance').className='amount '+(income-expenses<0?'red':'green');
+  $('budget').value=budget||'';
+
+  const sorted=[...transactions].sort((a,b)=>b.date.localeCompare(a.date));
+  $('recent').innerHTML=sorted.slice(0,5).map(transactionHTML).join('')||
+    '<p class="empty">Todavía no registraste movimientos.</p>';
+  $('allTransactions').innerHTML=sorted.map(transactionHTML).join('')||
+    '<p class="empty">Tus movimientos aparecerán acá.</p>';
+
+  if(budget>0){
+    const pct=Math.min(100,expenses/budget*100);
+    $('budgetResult').innerHTML=
+      '<p>Gastaste <strong>'+money(expenses)+'</strong> de '+money(budget)+'.</p>'+
+      '<div class="progress"><div style="width:'+pct+'%;background:'+
+      (expenses>budget?'#c74747':'#36a568')+'"></div></div>'+
+      '<p class="muted">'+(expenses>budget?
+      'Superaste tu presupuesto por '+money(expenses-budget):
+      'Te quedan '+money(budget-expenses)+' de presupuesto')+'</p>';
+  }else{
+    $('budgetResult').innerHTML='<p class="empty">Definí un límite mensual para controlar tus gastos.</p>';
+  }
+
+  $('goalsList').innerHTML=goals.map((g,i)=>{
+    const pct=Math.min(100,g.target>0?g.saved/g.target*100:0);
+    return '<div class="item"><div style="flex:1;min-width:0"><strong>'+safe(g.name)+'</strong>'+
+    '<small>'+money(g.saved)+' de '+money(g.target)+'</small>'+
+    '<div class="progress"><div style="width:'+pct+'%"></div></div>'+
+    '<small>'+pct.toFixed(0)+'% completado</small></div>'+
+    '<button class="secondary" data-add="'+i+'">+ Ahorro</button></div>';
+  }).join('')||'<p class="empty">Todavía no creaste una meta de ahorro.</p>';
+}
+function transactionHTML(t){
+  return '<div class="item"><div style="min-width:0"><strong>'+safe(t.description)+'</strong>'+
+  '<small>'+safe(t.category)+' · '+safe(t.date)+'</small></div><div class="item-right">'+
+  '<strong class="'+(t.type==='income'?'green':'red')+'">'+
+  (t.type==='income'?'+':'−')+money(t.amount)+'</strong>'+
+  '<button class="secondary" style="margin-top:6px" data-delete="'+safe(t.id)+'">Eliminar</button>'+
+  '</div></div>';
+}
+document.querySelectorAll('[data-tab]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===button));
+    document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===button.dataset.tab));
+  });
+});
+$('date').value=new Date().toISOString().slice(0,10);
+$('year').textContent=new Date().getFullYear();
+
+$('transactionForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const amount=Number($('amount').value);
+  if(!Number.isSafeInteger(amount)||amount<=0){
+    alert('Ingresá un monto entero mayor que cero.');return;
+  }
+  transactions.push({
+    id:String(Date.now())+Math.random().toString(16).slice(2),
+    type:$('type').value,
+    description:$('description').value.trim(),
+    category:$('category').value,
+    amount,
+    date:$('date').value
+  });
+  if(save()){
+    $('description').value='';
+    $('amount').value='';
+    render();
+  }else{transactions.pop()}
+});
+$('saveBudget').addEventListener('click',()=>{
+  const value=Number($('budget').value);
+  if(!Number.isSafeInteger(value)||value<0){
+    alert('Ingresá un presupuesto válido.');return;
+  }
+  budget=value;
+  if(save())render();
+});
+$('goalForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const target=Number($('goalTarget').value);
+  const saved=Number($('goalSaved').value);
+  const name=$('goalName').value.trim();
+  if(!name||!Number.isSafeInteger(target)||target<=0||
+     !Number.isSafeInteger(saved)||saved<0){
+    alert('Revisá el nombre y los montos de tu meta.');return;
+  }
+  goals.push({name,target,saved});
+  if(save()){
+    $('goalForm').reset();
+    $('goalSaved').value='0';
+    render();
+  }else{goals.pop()}
+});
+document.addEventListener('click',e=>{
+  const del=e.target.closest('[data-delete]');
+  if(del){
+    if(confirm('¿Querés eliminar este movimiento?')){
+      const old=transactions;
+      transactions=transactions.filter(t=>t.id!==del.dataset.delete);
+      if(!save())transactions=old;
+      render();
+    }
+  }
+  const add=e.target.closest('[data-add]');
+  if(add){
+    const value=prompt('¿Cuánto querés agregar a esta meta? (₲)');
+    if(value===null)return;
+    const amount=Number(value);
+    if(!Number.isSafeInteger(amount)||amount<=0){
+      alert('Ingresá un monto entero mayor que cero.');return;
+    }
+    const old=goals[Number(add.dataset.add)].saved;
+    goals[Number(add.dataset.add)].saved+=amount;
+    if(!save())goals[Number(add.dataset.add)].saved=old;
+    render();
+  }
+});
+$('seeAll').addEventListener('click',()=>{
+  document.querySelector('[data-tab="transactions"]').click();
+});
+$('clearTransactions').addEventListener('click',()=>{
+  if(confirm('¿Eliminar todos los movimientos? Esta acción no se puede deshacer.')){
+    const old=transactions;
+    transactions=[];
+    if(!save())transactions=old;
+    render();
+  }
+});
+render();
+</script>
+</body>
+</html>
+
